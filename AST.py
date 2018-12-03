@@ -37,7 +37,6 @@ class Expr:
                 n = n.getChild()
                 count+=1
                 if count >= 4:
-                    print('Not limit reached')
                     return neighbors
         neighbors.append(Not(Not(self)))
 
@@ -111,7 +110,18 @@ class UnaryOp(Expr):
         neighbors = []
         cn = self.child.getNeighbors()
         for c in cn:
-            neighbors.append(type(self)(c))
+            addn = True
+            if isinstance(c, Not):
+                count = 2
+                n = c.getChild()
+                while isinstance(n, Not):
+                    n = c.getChild()
+                    count+=1
+                    if count >= 4:
+                        addn = False
+                        break
+            if addn:
+                neighbors.append(type(self)(c))
 
         return neighbors + super().getNeighbors()
 

@@ -13,8 +13,7 @@ def BFS(start, target):
     found = False
     last = None
     ind = 0
-    while (not found) and len(queue)>0:
-        print([(q[0], q[1]) for q in queue[ind:]])
+    while (not found) and len(queue[ind:])>0:
         node = queue[ind]
         ind+=1
         neighbors = node[0].getNeighbors()
