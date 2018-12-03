@@ -26,9 +26,11 @@ def BFS(start, target):
                 queue.append((n, node))
     if last==None:
         print('The expressions are not logically equivalent.')
+        return False
     else:
         print('Path found! The expressions are logically equivalent!')
         printPath(last)
+        return True
 
 def printPath(node):
     if node[1]==None:
@@ -43,7 +45,7 @@ def main():
     p = Parser()
     start = p.parse(sys.argv[1])
     target = p.parse(sys.argv[2])
-    BFS(start, target)
+    return BFS(start, target)
 
 if __name__ == '__main__':
     main()
