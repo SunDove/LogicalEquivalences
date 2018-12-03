@@ -27,10 +27,21 @@ class Expr:
                 return self
 
     def getNeighbors(self):
+        neighbors = []
         if isinstance(self, Bool):
-            return []
+            return neighbors
+        if isinstance(self, Not):
+            count = 1
+            n = self
+            while isinstance(n.getChild(), Not):
+                n = n.getChild()
+                count+=1
+                if count >= 4:
+                    print('Not limit reached')
+                    return neighbors
+        neighbors.append(Not(Not(self)))
 
-        return [Not(Not(self))]
+        return neighbors
 
 
 class Const(Expr):
@@ -71,6 +82,17 @@ class BinaryOp(Expr):
     def setSecondChild(self, e2):
         self.child2 = e2
 
+    def getNeighbors(self):
+        neighbors = []
+        c1n = self.child1.getNeighbors()
+        for c in c1n:
+            neighbors.append(type(self)(c, self.child2))
+        c2n = self.child2.getNeighbors()
+        for c in c2n:
+            neighbors.append(type(self)(self.child1, c))
+
+        return neighbors + super().getNeighbors()
+
 # This might not be necessary but whatever
 class UnaryOp(Expr):
     def __init__(self, e):
@@ -84,6 +106,14 @@ class UnaryOp(Expr):
 
     def setChild(self, e):
         self.child = e
+
+    def getNeighbors(self):
+        neighbors = []
+        cn = self.child.getNeighbors()
+        for c in cn:
+            neighbors.append(type(self)(c))
+
+        return neighbors + super().getNeighbors()
 
 ########################
 #   Concrete classes   #
@@ -137,10 +167,10 @@ class Not(UnaryOp):
         #Double negation law
         if isinstance(c, Not):
             neighbors.append(c.child)
-        
+
         if isinstance(c, Cond):
             neighbors.append(And(c.getFirstChild(), Not(c.getSecondChild())))
-        
+
         if isinstance(c, BiCond):
             neighbors.append(BiCond(c.getFirstChild(), Not(c.getSecondChild())))
 
@@ -149,7 +179,7 @@ class Not(UnaryOp):
 class And(BinaryOp):
     def __str__(self):
         return "And(" + str(self.getFirstChild()) + ", " + str(self.getSecondChild()) + ")"
-    
+
     def getNeighbors(self):
         c1 = self.getFirstChild()
         c2 = self.getSecondChild()
@@ -158,15 +188,15 @@ class And(BinaryOp):
         # Identity law
         if c2 == Bool(True):
             neighbors.append(c1)
-        
+
         # Domination law
         if c1 == Bool(False):
             neighbors.append(Bool(False))
-        
+
         # Idempotent laws
         if c1 == c2:
             neighbors.append(c1)
-        
+
         # Commutative law
         # Potential cycle here :/
         neighbors.append(And(c2, c1))
@@ -175,19 +205,18 @@ class And(BinaryOp):
         # Potential cycle here too ;/
         if isinstance(c1, And):
             neighbors.append(And(c1.getFirstChild(), And(c1.getSecondChild(), c2)))
-        
+
         # Distributive law
         if isinstance(c2, Or):
             neighbors.append(Or(And(c1, c2.getFirstChild()), And(c1, c2.getSecondChild())))
-        
+
         # De Morgan's law
-        if isinstance(c1, Not) or isinstance(c2, Not):
-            neighbors.append(Not(Or(c1.getChild(), c2.getChild())))
-        
+        neighbors.append(Not(Or(c1, c2)))
+
         # Absorption law
         if isinstance(c2, Or) and c1 == c2.getFirstChild():
             neighbors.append(c1)
-        
+
         # Negation law
         if isinstance(c2, Not) and c1 == c2.getChild():
             neighbors.append(Bool(False))
@@ -208,7 +237,7 @@ class And(BinaryOp):
 class Or(BinaryOp):
     def __str__(self):
         return "Or(" + str(self.getFirstChild()) + ", " + str(self.getSecondChild()) + ")"
-    
+
     def getNeighbors(self):
         c1 = self.getFirstChild()
         c2 = self.getSecondChild()
@@ -217,53 +246,56 @@ class Or(BinaryOp):
         # Identity law
         if c2 == Bool(False):
             neighbors.append(c1)
-        
+        if c1 == Bool(False):
+            neighbors.append(c2)
+
         # Domination law
-        if c2 == Bool(True):
+        if c2 == Bool(True) or c1 == Bool(True):
             neighbors.append(Bool(True))
-        
+
         # Idempotent law
         if c1 == c2:
             neighbors.append(c1)
-        
+
         # Commutative law
         neighbors.append(Or(c2, c1))
 
         # Associative law
         if isinstance(c1, Or):
             neighbors.append(Or(c1.getFirstChild(), Or(c1.getSecondChild(), c2)))
-        
+
         # Distributive law
         if isinstance(c2, And):
             neighbors.append(And(Or(c1, c2.getFirstChild()), Or(c1, c2.getSecondChild())))
-        
+
         # De Morgan's law
-        if isinstance(c1, Not) and isinstance(c2, Not):
-            neighbors.append(Not(And(c1.getChild(), c2.getChild())))
-        
+        neighbors.append(Not(And(c1, c2)))
+
         # Absorption law
-        if isinstance(c2, And) and c1 == c2.getFirstChild():
+        if isinstance(c2, And) and (c1 in c2.getChild()):
             neighbors.append(c1)
-        
+
         # Negation law
         if isinstance(c2, Not) and c1 == c2.getChild():
             neighbors.append(Bool(True))
-        
+        if isinstance(c1, Not) and c2 == c1.getChild():
+            neighbors.append(Bool(True))
+
         # 7.3
         neighbors.append(Cond(Not(c1), c2))
 
         # 7.8
-        if (isinstance(c1, Cond) and isinstance(c2, Cond) 
+        if (isinstance(c1, Cond) and isinstance(c2, Cond)
             and c1.getFirstChild() == c2.getFirstChild()):
             neighbors.append(Cond(c1.getFirstChild(), Or(c1.getSecondChild(), c2.getSecondChild())))
-        
+
         # 7.9
         if (isinstance(c1, Cond) and isinstance(c2, Cond)
             and c1.getSecondChild() == c2.getSecondChild()):
             neighbors.append(Cond(And(c1.getFirstChild(), c2.getFirstChild()), c1.getSecondChild()))
-        
+
         return neighbors + super().getNeighbors()
-        
+
 
 class Xor(BinaryOp):
     def __str__(self):
@@ -272,7 +304,7 @@ class Xor(BinaryOp):
 class Cond(BinaryOp):
     def __str__(self):
         return "Cond(" + str(self.getFirstChild()) + ", " + str(self.getSecondChild()) + ")"
-    
+
     def getNeighbors(self):
         c1 = self.getFirstChild()
         c2 = self.getSecondChild()
@@ -304,4 +336,4 @@ class BiCond(BinaryOp):
         # 8.3
         neighbors.append(Or(And(c1, c2), And(Not(c1), Not(c2))))
 
-        return neighbors + super().getNeighbors
+        return neighbors + super().getNeighbors()
