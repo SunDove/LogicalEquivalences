@@ -9,7 +9,6 @@ class Parser:
         self.operators = ['~', '^', 'v', 'x', '->', '[=]'] #[Not, And, Or, Xor, Conditional, BiConditional]
 
     def parse(self, str):
-        print(str)
         str = str.replace(' ', '')
         if str.count('(')!=str.count(')'):
             raise Exception('Unequal number of opening and closing parentheses in expression')
@@ -70,7 +69,7 @@ class Parser:
                     if oper=='':
                         raise Exception('Invalid operation')
                 else:
-                    opInd, op = min([(str.find(o), oper) for o in self.operators[1:]])
+                    opInd, oper = min([(str.find(o), o) for o in self.operators[1:]])
                 p1 = self.parse(str[0:opInd])
                 p2 = self.parse(str[opInd+len(oper):])
                 if oper=='^':
