@@ -26,6 +26,13 @@ class Expr:
             else:
                 return self
 
+    def getNeighbors(self):
+        if isinstance(self, Bool):
+            return []
+
+        return [Not(Not(self))]
+
+
 class Const(Expr):
     def __init__(self, e):
         pass
@@ -112,6 +119,25 @@ class Var(Const):
 class Not(UnaryOp):
     def __str__(self):
         return "Not(" + str(self.getChild()) + ")"
+
+    def getNeighbors(self):
+        c = self.getChild()
+        neighbors = []
+        if isinstance(c, Bool): #simplify not(bool) to just not bool
+            neighbors.append(Bool(not c.value))
+
+        #DeMorgan's Laws:
+        if isinstance(c, And):
+            a = c
+            neighbors.append(Or(Not(a.getFirstChild()), Not(a.getSecondChild())))
+        if isinstance(c, Or):
+            a = c
+            neighbors.append(And(Not(a.getFirstChild()), Not(a.getSecondChild())))
+
+        #Double negation law
+        if isinstance(c, Not):
+            neighbors.append(c.child)
+        return neighbors + super().getNeighbors()
 
 class And(BinaryOp):
     def __str__(self):
