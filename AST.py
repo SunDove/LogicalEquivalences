@@ -198,9 +198,11 @@ class And(BinaryOp):
         # Identity law
         if c2 == Bool(True):
             neighbors.append(c1)
+        if c1 == Bool(True):
+            neighbors.append(c2)
 
         # Domination law
-        if c1 == Bool(False):
+        if c1 == Bool(False) or c2 == Bool(False):
             neighbors.append(Bool(False))
 
         # Idempotent laws
@@ -219,16 +221,22 @@ class And(BinaryOp):
         # Distributive law
         if isinstance(c2, Or):
             neighbors.append(Or(And(c1, c2.getFirstChild()), And(c1, c2.getSecondChild())))
+        if isinstance(c1, Or):
+            neighbors.append(Or(And(c2, c1.getFirstChild()), And(c2, c1.getSecondChild())))
 
         # De Morgan's law
         neighbors.append(Not(Or(c1, c2)))
 
         # Absorption law
-        if isinstance(c2, Or) and c1 == c2.getFirstChild():
+        if isinstance(c2, Or) and (c1 in c2.getChild()):
             neighbors.append(c1)
+        if isinstance(c1, Or) and (c2 in c1.getChild()):
+            neighbors.append(c2)
 
         # Negation law
         if isinstance(c2, Not) and c1 == c2.getChild():
+            neighbors.append(Bool(False))
+        if isinstance(c1, Not) and c2 == c1.getChild():
             neighbors.append(Bool(False))
 
         # 7.4
@@ -277,6 +285,8 @@ class Or(BinaryOp):
         # Distributive law
         if isinstance(c2, And):
             neighbors.append(And(Or(c1, c2.getFirstChild()), Or(c1, c2.getSecondChild())))
+        if isinstance(c1, And):
+            neighbors.append(And(Or(c2, c1.getFirstChild()), Or(c2, c1.getSecondChild())))
 
         # De Morgan's law
         neighbors.append(Not(And(c1, c2)))
@@ -284,6 +294,8 @@ class Or(BinaryOp):
         # Absorption law
         if isinstance(c2, And) and (c1 in c2.getChild()):
             neighbors.append(c1)
+        if isinstance(c1, And) and (c2 in c1.getChild()):
+            neighbors.append(c2)
 
         # Negation law
         if isinstance(c2, Not) and c1 == c2.getChild():

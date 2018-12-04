@@ -9,6 +9,7 @@ def inQueue(q, n):
     return False
 
 def BFS(start, target):
+    print(start, target)
     queue = [(start, None)]
     found = False
     last = None
