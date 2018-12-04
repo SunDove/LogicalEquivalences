@@ -12,6 +12,9 @@ class Expr:
     def __str__(self):
         pass
 
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
         return self.__str__() == str(other)
 
