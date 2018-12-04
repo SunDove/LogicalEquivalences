@@ -18,6 +18,14 @@ class Expr:
     def __eq__(self, other):
         return self.__str__() == str(other)
 
+    def depth(self):
+        if isinstance(self, Const):
+            return 1
+        if isinstance(self, UnaryOp):
+            return 1+self.child.depth()
+        if isinstance(self, BinaryOp):
+            return max(self.child1.depth(), self.child2.depth()) + 1
+
     def replace(self, exp1, exp2):
         if self==exp1:
             return exp2

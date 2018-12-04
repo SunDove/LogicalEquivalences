@@ -42,6 +42,11 @@ class TestAST(unittest.TestCase):
             self.assertRaises(ValueError, op, True, True)
             self.assertRaises(ValueError, op, self.boolFalse, True)
 
+    def testDepth(self):
+        self.assertEqual(Var('p').depth(), 1)
+        self.assertEqual(Not(Var('p')).depth(), 2)
+        self.assertEqual(Cond(Not(Var('p')), Var('p')).depth(), 3)
+
     def testParser(self):
         p = Parser()
         self.assertEqual(p.parse('p'), Var('p'))
