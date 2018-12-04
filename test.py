@@ -60,7 +60,7 @@ class TestSearch(unittest.TestCase):
         # self.case2 = ['p [=] q', '(p^q)v((~p)^(~q))']
 
         self.cases = [self.case1, self.case2]
-    
+
     def testBfs(self):
         for case in self.cases:
             self.assertTrue(BFS.BFS(case[0], case[1]), msg=str(case[0]) + " " + str(case[1]))

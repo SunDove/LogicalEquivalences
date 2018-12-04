@@ -220,6 +220,8 @@ class And(BinaryOp):
         # Potential cycle here too ;/
         if isinstance(c1, And):
             neighbors.append(And(c1.getFirstChild(), And(c1.getSecondChild(), c2)))
+        if isinstance(c2, And):
+            neighbors.append(And(c2.getFirstChild(), And(c2.getSecondChild(), c1)))
 
         # Distributive law
         if isinstance(c2, Or):
@@ -284,6 +286,8 @@ class Or(BinaryOp):
         # Associative law
         if isinstance(c1, Or):
             neighbors.append(Or(c1.getFirstChild(), Or(c1.getSecondChild(), c2)))
+        if isinstance(c2, Or):
+            neighbors.append(Or(c2.getFirstChild(), Or(c2.getSecondChild(), c1)))
 
         # Distributive law
         if isinstance(c2, And):

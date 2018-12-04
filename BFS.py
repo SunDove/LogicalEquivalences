@@ -2,18 +2,13 @@ import sys
 
 from parser import Parser
 
-def inQueue(q, n):
-    for tuple in q:
-        if tuple[0]==n:
-            return True
-    return False
-
 def BFS(start, target):
     print(start, target)
     queue = [(start, None)]
     found = False
     last = None
     ind = 0
+    visited = {}
     while (not found) and len(queue[ind:])>0:
         node = queue[ind]
         ind+=1
@@ -23,7 +18,8 @@ def BFS(start, target):
                 found = True
                 last = (target, node)
                 break
-            elif not inQueue(queue, n):
+            elif str(n) not in visited:
+                visited[str(n)] = True
                 queue.append((n, node))
     if last==None:
         print('The expressions are not logically equivalent.')
