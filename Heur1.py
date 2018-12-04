@@ -1,26 +1,30 @@
 import sys
 import time
+from heapq import *
 
 from parser import Parser
 
-def BFS(start, target):
-    queue = [(start, None)]
+def search(start, target):
+    heap = []
+    score = abs(start.depth()-target.depth())
+    heappush(heap, (score, [start, None]))
     found = False
-    last = None
-    ind = 0
     visited = {}
-    while (not found) and len(queue[ind:])>0:
-        node = queue[ind]
-        ind+=1
-        neighbors = node[0].getNeighbors()
-        for n in neighbors:
+    last = None
+    while (not found) and len(heap)>0:
+        node = heappop(heap)
+        node = node[1]
+        neigh = node[0].getNeighbors()
+        for n in neigh:
             if n==target:
                 found = True
-                last = (target, node)
+                last = [target, node]
                 break
             elif str(n) not in visited:
                 visited[str(n)] = True
-                queue.append((n, node))
+                score = abs(n.depth()-target.depth())
+                item = (score, [n, node])
+                heappush(heap, item)
     if last==None:
         print('The expressions are not logically equivalent.')
         return False
@@ -43,10 +47,9 @@ def main():
     start = p.parse(sys.argv[1])
     target = p.parse(sys.argv[2])
     s = time.time()
-    res = BFS(start, target)
+    res = search(start, target)
     e = time.time()
-    print("BFS Elapsed Time: %s" % (e-s))
-    return res
+    print("Tree Depth Heuristic Elapsed Time: %s" % (e-s))
 
 if __name__ == '__main__':
     main()

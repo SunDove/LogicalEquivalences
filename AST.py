@@ -18,6 +18,9 @@ class Expr:
     def __eq__(self, other):
         return self.__str__() == str(other)
 
+    def __lt__(self, other):
+        return 0
+
     def depth(self):
         if isinstance(self, Const):
             return 1
