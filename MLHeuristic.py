@@ -1,0 +1,129 @@
+import sys
+import time
+from heapq import *
+import AST
+import numpy as np
+
+from parser import Parser
+
+def depthH(node, target):
+    return abs(node.depth() - target.depth())
+
+targetOpDict = None
+
+def numOpsH(node, target):
+    global targetOpDict
+
+    if targetOpDict == None:
+        targetOpDict = target.numOps()
+
+    nodeOpDict = node.numOps()
+
+    commonKeys = set(targetOpDict.keys()) | set(nodeOpDict.keys())
+
+    total = 0
+    for key in commonKeys:
+        keyCount = 0
+        if key in nodeOpDict:
+            keyCount = nodeOpDict[key]
+
+        if key in targetOpDict:
+            keyCount = abs(targetOpDict[key] - keyCount)
+
+        total += keyCount
+    return total
+
+def countConsts(node):
+    if isinstance(node, AST.Const):
+        return 1
+
+    if isinstance(node, AST.BinaryOp):
+        return countConsts(node.getFirstChild()) + countConsts(node.getSecondChild())
+
+    return countConsts(node.getChild())
+
+def constH(node, target):
+    return abs(countConsts(target) - countConsts(node))
+
+def heur(s, t, h, w):
+    v = np.array([hi(s, t) for hi in h])
+    return np.matrix.dot(v, w)
+
+def search(start, target, heurs, weights, pr=True):
+    heap = []
+    score = heur(start, target, heurs, weights)
+    heappush(heap, (score, [start, None]))
+    found = False
+    visited = {}
+    last = None
+    while (not found) and len(heap)>0:
+        node = heappop(heap)
+        node = node[1]
+        neigh = node[0].getNeighbors()
+        for n in neigh:
+            if n==target:
+                found = True
+                last = [target, node]
+                break
+            elif str(n) not in visited:
+                visited[str(n)] = True
+                score = heur(n, target, heurs, weights)
+                item = (score, [n, node])
+                heappush(heap, item)
+    if last==None:
+        if pr:
+            print('The expressions are not logically equivalent.')
+        return found
+    else:
+        if pr:
+            print('Path found! The expressions are logically equivalent!')
+            printPath(last)
+        return found
+
+def printPath(node):
+    if node[1]==None:
+        print(node[0])
+    else:
+        printPath(node[1])
+        print(node[0])
+
+def newPop(population, scores):
+    choose = []
+    for i in range(10):
+        choose.append(heappop(scores)[1])
+    pop = [c for c in choose]
+    for i in range(90):
+        old = np.random.choice(range(len(choose)))
+        old = choose[old]
+        mute = np.multiply(np.random.choice([-1, 1], size=3), 0.1)
+        pop.append(np.add(old, mute))
+    return pop
+
+def main():
+    if len(sys.argv) != 3:
+        raise Exception('Invalid number of arguments')
+
+    p = Parser()
+    start = p.parse(sys.argv[1])
+    target = p.parse(sys.argv[2])
+    population = np.random.rand(100, 3) #3 is number of heuristics
+    best = []
+    for i in range(100):
+        for p in population:
+            s = time.time()
+            res = search(start, target, [depthH, numOpsH, constH], p, False)
+            e = time.time()
+            heappush(best, (e-s, p))
+        population = newPop(population, best)
+        print(best[0])
+        best = []
+        print("%s done" % i)
+    s = time.time()
+    res = search(start, target, [depthH, numOpsH, constH], best[0])
+    e = time.time()
+    print("Best time: %" % (e-s))
+    print("Weights: %s" % best[0])
+
+
+if __name__ == '__main__':
+    main()
