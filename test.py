@@ -2,6 +2,7 @@ import unittest
 from AST import *
 from parser import Parser
 import BFS
+import Heuristic
 
 class TestAST(unittest.TestCase):
 
@@ -69,6 +70,14 @@ class TestSearch(unittest.TestCase):
     def testBfs(self):
         for case in self.cases:
             self.assertTrue(BFS.BFS(case[0], case[1]), msg=str(case[0]) + " " + str(case[1]))
+    
+    def testDepth(self):
+        for case in self.cases:
+            self.assertTrue(Heuristic.search(case[0], case[1], Heuristic.depthH))
+    
+    def testOpCount(self):
+        for case in self.cases:
+            self.assertTrue(Heuristic.search(case[0], case[1], Heuristic.numOpsH))
 
 if __name__ == "__main__":
     unittest.main()

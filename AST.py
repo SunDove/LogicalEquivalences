@@ -28,6 +28,9 @@ class Expr:
             return 1+self.child.depth()
         if isinstance(self, BinaryOp):
             return max(self.child1.depth(), self.child2.depth()) + 1
+        
+    def numOps(self):
+        raise NotImplementedError
 
     def replace(self, exp1, exp2):
         if self==exp1:
@@ -66,6 +69,9 @@ class Const(Expr):
 
     def getChild(self):
         return None
+    
+    def numOps(self):
+        return {type(self).__name__: 1}
 
 
 class BinaryOp(Expr):
@@ -105,6 +111,32 @@ class BinaryOp(Expr):
             neighbors.append(type(self)(self.child1, c))
 
         return neighbors + super().getNeighbors()
+    
+    def numOps(self):
+        opCount1 = self.child1.numOps()
+        opCount2 = self.child2.numOps()
+
+        commonKeys = set(opCount1.keys()) | set(opCount2.keys())
+        newDict = {}
+
+        for key in commonKeys:
+            keyTotal = 0
+            if key in opCount1:
+                keyTotal += opCount1[key]
+            
+            if key in opCount2:
+                keyTotal += opCount2[key]
+            
+            newDict[key] = keyTotal
+
+        name = type(self).__name__
+
+        try:
+            newDict[name] += 1
+        except KeyError:
+            newDict[name] = 1
+        
+        return newDict
 
 # This might not be necessary but whatever
 class UnaryOp(Expr):
@@ -138,6 +170,15 @@ class UnaryOp(Expr):
                 neighbors.append(type(self)(c))
 
         return neighbors + super().getNeighbors()
+    
+    def numOps(self):
+        newDict = self.child.numOps()
+        try:
+            newDict[type(self).__name__] += 1
+        except KeyError:
+            newDict[type(self).__name__] = 1
+        
+        return newDict
 
 ########################
 #   Concrete classes   #
