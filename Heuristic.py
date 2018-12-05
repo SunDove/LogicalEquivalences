@@ -32,6 +32,18 @@ def numOpsH(node, target):
         total += keyCount
     return total
 
+def countConsts(node):
+    if isinstance(node, AST.Const):
+        return 1
+    
+    if isinstance(node, AST.BinaryOp):
+        return countConsts(node.getFirstChild()) + countConsts(node.getSecondChild())
+
+    return countConsts(node.getChild())
+
+def constH(node, target):
+    return abs(countConsts(target) - countConsts(node))
+
 def search(start, target, heur):
     heap = []
     score = heur(start, target)
@@ -72,7 +84,7 @@ def main():
     if len(sys.argv) != 4:
         raise Exception('Invalid number of arguments')
 
-    argKeys = {"depth": depthH, "numOps": numOpsH}
+    argKeys = {"depth": depthH, "numOps": numOpsH, "constCount": constH}
     p = Parser()
     start = p.parse(sys.argv[1])
     target = p.parse(sys.argv[2])
