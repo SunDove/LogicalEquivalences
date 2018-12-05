@@ -28,7 +28,7 @@ class Expr:
             return 1+self.child.depth()
         if isinstance(self, BinaryOp):
             return max(self.child1.depth(), self.child2.depth()) + 1
-        
+
     def numOps(self):
         raise NotImplementedError
 
@@ -53,9 +53,9 @@ class Expr:
             while isinstance(n.getChild(), Not):
                 n = n.getChild()
                 count+=1
-                if count >= 4:
+                if count >= 3:
                     return neighbors
-        neighbors.append(Not(Not(self)))
+        #neighbors.append(Not(Not(self)))
 
         return neighbors
 
@@ -69,7 +69,7 @@ class Const(Expr):
 
     def getChild(self):
         return None
-    
+
     def numOps(self):
         return {type(self).__name__: 1}
 
@@ -111,7 +111,7 @@ class BinaryOp(Expr):
             neighbors.append(type(self)(self.child1, c))
 
         return neighbors + super().getNeighbors()
-    
+
     def numOps(self):
         opCount1 = self.child1.numOps()
         opCount2 = self.child2.numOps()
@@ -123,10 +123,10 @@ class BinaryOp(Expr):
             keyTotal = 0
             if key in opCount1:
                 keyTotal += opCount1[key]
-            
+
             if key in opCount2:
                 keyTotal += opCount2[key]
-            
+
             newDict[key] = keyTotal
 
         name = type(self).__name__
@@ -135,7 +135,7 @@ class BinaryOp(Expr):
             newDict[name] += 1
         except KeyError:
             newDict[name] = 1
-        
+
         return newDict
 
 # This might not be necessary but whatever
@@ -163,21 +163,21 @@ class UnaryOp(Expr):
                 while isinstance(n, Not):
                     n = c.getChild()
                     count+=1
-                    if count >= 4:
+                    if count >= 3:
                         addn = False
                         break
             if addn:
                 neighbors.append(type(self)(c))
 
         return neighbors + super().getNeighbors()
-    
+
     def numOps(self):
         newDict = self.child.numOps()
         try:
             newDict[type(self).__name__] += 1
         except KeyError:
             newDict[type(self).__name__] = 1
-        
+
         return newDict
 
 ########################

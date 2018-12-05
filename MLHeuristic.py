@@ -90,16 +90,34 @@ def printPath(node):
 def newPop(population, scores):
     choose = []
     for i in range(10):
-        choose.append(heappop(scores)[1])
+        choose.append(heappop(scores)[1].array)
     pop = [c for c in choose]
-    for i in range(90):
+    for i in range(80):
         old = np.random.choice(range(len(choose)))
         old = choose[old]
         mute = np.multiply(np.random.choice([-1, 1], size=3), 0.1)
         pop.append(np.add(old, mute))
+    for i in range(10):
+        pop.append(np.random.rand(1, 3)[0])
+    print(len(pop))
     return pop
 
+class StupidArray:
+
+    def __init__(self, a):
+        self.array = a
+
+    def __lt__(self, other):
+        return 0
+
+    def __str__(self):
+        return str(self.array)
+
+    def __repr__(self):
+        return str(self.array)
+
 def main():
+    #sys.setrecursionlimit(10000)
     if len(sys.argv) != 3:
         raise Exception('Invalid number of arguments')
 
@@ -109,20 +127,22 @@ def main():
     population = np.random.rand(100, 3) #3 is number of heuristics
     best = []
     for i in range(100):
+        best = []
+        print(best)
         for p in population:
             s = time.time()
             res = search(start, target, [depthH, numOpsH, constH], p, False)
             e = time.time()
-            heappush(best, (e-s, p))
+            heappush(best, (e-s, StupidArray(p)))
         population = newPop(population, best)
         print(best[0])
-        best = []
         print("%s done" % i)
     s = time.time()
-    res = search(start, target, [depthH, numOpsH, constH], best[0])
+    res = search(start, target, [depthH, numOpsH, constH], best[0].array)
     e = time.time()
     print("Best time: %" % (e-s))
     print("Weights: %s" % best[0])
+    #[ 0.90416266  0.60873807 -0.97709181]
 
 
 if __name__ == '__main__':
