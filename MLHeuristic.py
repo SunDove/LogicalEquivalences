@@ -60,7 +60,7 @@ def search(start, target, heurs, weights, pr=True):
 
     startDepth = start.depth()
     targetDepth = target.depth()
-    maxDepth = max(startDepth, targetDepth) + (startDepth + targetDepth)/2
+    maxDepth = max(startDepth, targetDepth) + np.sqrt(startDepth + targetDepth)
 
     while (not found) and len(heap)>0:
         node = heappop(heap)
@@ -96,17 +96,16 @@ def printPath(node):
 
 def newPop(population, scores):
     choose = []
-    for i in range(10):
+    for i in range(5):
         choose.append(heappop(scores)[1].array)
     pop = [c for c in choose]
-    for i in range(80):
+    for i in range(40):
         old = np.random.choice(range(len(choose)))
         old = choose[old]
-        mute = np.multiply(np.random.choice([-1, 1], size=3), 0.1)
+        mute = np.multiply(np.random.choice([-1, 1], size=3), 3)
         pop.append(np.add(old, mute))
-    for i in range(10):
+    for i in range(5):
         pop.append(np.random.rand(1, 3)[0])
-    print(len(pop))
     return pop
 
 class StupidArray:
@@ -124,39 +123,53 @@ class StupidArray:
         return str(self.array)
 
 def main():
-    # sys.setrecursionlimit(1000)
-    if len(sys.argv) != 3:
-        raise Exception('Invalid number of arguments')
 
-    p = Parser()
-    start = p.parse(sys.argv[1])
-    target = p.parse(sys.argv[2])
-    population = np.random.rand(100, 3) #3 is number of heuristics
+    training = [
+        ('(avb)vc', 'av(bvc)'),
+        ('~(p->q)', 'p^~q'),
+        ('~(pv(~p^q))', '~p^~q'),
+        ('(p^q)->(pvq)', 'T'),
+        ('(pvq)^((~pvr)->(pvq))', 'T')
+    ]
+
+    par = Parser()
+    train = [(par.parse(t[0]), par.parse(t[1])) for t in training]
+
+    population = np.random.rand(50, 3)*10 #3 is number of heuristics
     best = []
     searchTimeout = 10 # In seconds
-    for i in range(100):
+    for i in range(20):
         best = []
-        print(best)
         for p in population:
-            searchProcess = m.Process(target=search, args=(start, target, [depthH, numOpsH, constH], p, False))
-            s = time.time()
-            searchProcess.start()
-            searchProcess.join(searchTimeout)
-            # res = search(start, target, [depthH, numOpsH, constH], p, False)
-            e = time.time()
-            if searchProcess.is_alive():
-                searchProcess.terminate()
-                print("search did not terminate in time")
-            else:
-                heappush(best, (e-s, StupidArray(p)))
+            score = 0
+            for t in train:
+                start = t[0]
+                target = t[1]
+                searchProcess = m.Process(target=search, args=(start, target, [depthH, numOpsH, constH], p, False))
+                s = time.time()
+                searchProcess.start()
+                searchProcess.join(searchTimeout)
+                # res = search(start, target, [depthH, numOpsH, constH], p, False)
+                e = time.time()
+                if searchProcess.is_alive():
+                    searchProcess.terminate()
+                    score += 100
+                    print("search did not terminate in time")
+                else:
+                    score += e-s
+            print(score, p)
+            heappush(best, (score, StupidArray(p)))
         population = newPop(population, best)
         print(best[0])
         print("%s done" % i)
-    s = time.time()
-    res = search(start, target, [depthH, numOpsH, constH], best[0].array)
-    e = time.time()
-    print("Best time: %" % (e-s))
-    print("Weights: %s" % best[0])
+    times = []
+    for t in training:
+        s = time.time()
+        res = search(t[0], t[1], [depthH, numOpsH, constH], best[0][1].array)
+        e = time.time()
+        times.append(e-s)
+    print("Avg time: %s" % np.mean(times))
+    print("Weights: %s" % best[0][1].array)
     #[ 0.90416266  0.60873807 -0.97709181]
 
 

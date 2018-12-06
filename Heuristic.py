@@ -2,6 +2,7 @@ import sys
 import time
 from heapq import *
 import AST
+import numpy as np
 
 from parser import Parser
 
@@ -25,17 +26,17 @@ def numOpsH(node, target):
         keyCount = 0
         if key in nodeOpDict:
             keyCount = nodeOpDict[key]
-        
+
         if key in targetOpDict:
             keyCount = abs(targetOpDict[key] - keyCount)
-        
+
         total += keyCount
     return total
 
 def countConsts(node):
     if isinstance(node, AST.Const):
         return 1
-    
+
     if isinstance(node, AST.BinaryOp):
         return countConsts(node.getFirstChild()) + countConsts(node.getSecondChild())
 
@@ -51,10 +52,16 @@ def search(start, target, heur):
     found = False
     visited = {}
     last = None
+
+    startDepth = start.depth()
+    targetDepth = target.depth()
+    maxDepth = max(startDepth, targetDepth) + np.sqrt(startDepth + targetDepth)
+
     while (not found) and len(heap)>0:
         node = heappop(heap)
         node = node[1]
-        neigh = node[0].getNeighbors()
+        allNeigh = node[0].getNeighbors()
+        neigh = list(filter(lambda x: x.depth() < maxDepth, allNeigh))
         for n in neigh:
             if n==target:
                 found = True
@@ -62,7 +69,13 @@ def search(start, target, heur):
                 break
             elif str(n) not in visited:
                 visited[str(n)] = True
-                score = heur(n, target) 
+                nn = n.getNeighbors()
+                if len(nn)==0:
+                    score = heur(n, target)
+                else:
+                    n2 = np.random.choice(nn)
+                    score = heur(n2, target)
+                #score = heur(n, target)
                 item = (score, [n, node])
                 heappush(heap, item)
     if last==None:

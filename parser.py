@@ -8,11 +8,25 @@ class Parser:
     def __init__(self):
         self.operators = ['~', '^', 'v', 'x', '->', '[=]'] #[Not, And, Or, Xor, Conditional, BiConditional]
 
+    def opMatchClos(self, str):
+        count = 1
+        last = len(str)-2
+        for i in range(1, len(str[1:])):
+            if i==last:
+                return True
+            s = str[i]
+            if s=='(':
+                count += 1
+            if s==')':
+                count -=1
+            if count<=0:
+                return False
+
     def parse(self, str):
         str = str.replace(' ', '')
         if str.count('(')!=str.count(')'):
             raise Exception('Unequal number of opening and closing parentheses in expression')
-        while str[0]=='(' and str[-1]==')' and str.find(')') == len(str)-1 and str.rfind('(')==0:
+        while str[0]=='(' and str[-1]==')' and self.opMatchClos(str):
             str = str[1:-1]
         if str.count('(')==0:
             #Base case
