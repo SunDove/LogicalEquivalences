@@ -56,10 +56,16 @@ def search(start, target, heurs, weights, pr=True):
     found = False
     visited = {}
     last = None
+
+    startDepth = start.depth()
+    targetDepth = target.depth()
+    maxDepth = max(startDepth, targetDepth) + (startDepth + targetDepth)/4
+
     while (not found) and len(heap)>0:
         node = heappop(heap)
         node = node[1]
-        neigh = node[0].getNeighbors()
+        allNeigh = node[0].getNeighbors()
+        neigh = list(filter(lambda x: x.depth() < maxDepth, allNeigh))
         for n in neigh:
             if n==target:
                 found = True
@@ -117,7 +123,7 @@ class StupidArray:
         return str(self.array)
 
 def main():
-    #sys.setrecursionlimit(10000)
+    # sys.setrecursionlimit(1000)
     if len(sys.argv) != 3:
         raise Exception('Invalid number of arguments')
 
@@ -137,6 +143,8 @@ def main():
         population = newPop(population, best)
         print(best[0])
         print("%s done" % i)
+        if not res:
+            print("ERROR: Search returned False")
     s = time.time()
     res = search(start, target, [depthH, numOpsH, constH], best[0].array)
     e = time.time()
