@@ -3,6 +3,7 @@ import time
 from heapq import *
 import AST
 import numpy as np
+import multiprocessing as m
 
 from parser import Parser
 
@@ -59,7 +60,7 @@ def search(start, target, heurs, weights, pr=True):
 
     startDepth = start.depth()
     targetDepth = target.depth()
-    maxDepth = max(startDepth, targetDepth) + (startDepth + targetDepth)/4
+    maxDepth = max(startDepth, targetDepth) + (startDepth + targetDepth)/2
 
     while (not found) and len(heap)>0:
         node = heappop(heap)
@@ -132,19 +133,25 @@ def main():
     target = p.parse(sys.argv[2])
     population = np.random.rand(100, 3) #3 is number of heuristics
     best = []
+    searchTimeout = 10 # In seconds
     for i in range(100):
         best = []
         print(best)
         for p in population:
+            searchProcess = m.Process(target=search, args=(start, target, [depthH, numOpsH, constH], p, False))
             s = time.time()
-            res = search(start, target, [depthH, numOpsH, constH], p, False)
+            searchProcess.start()
+            searchProcess.join(searchTimeout)
+            # res = search(start, target, [depthH, numOpsH, constH], p, False)
             e = time.time()
-            heappush(best, (e-s, StupidArray(p)))
+            if searchProcess.is_alive():
+                searchProcess.terminate()
+                print("search did not terminate in time")
+            else:
+                heappush(best, (e-s, StupidArray(p)))
         population = newPop(population, best)
         print(best[0])
         print("%s done" % i)
-        if not res:
-            print("ERROR: Search returned False")
     s = time.time()
     res = search(start, target, [depthH, numOpsH, constH], best[0].array)
     e = time.time()
