@@ -4,6 +4,7 @@ from heapq import *
 import AST
 import numpy as np
 import multiprocessing as m
+import json
 
 from parser import Parser
 
@@ -123,7 +124,7 @@ class StupidArray:
         return str(self.array)
 
 def main():
-
+    '''
     training = [
         ('(avb)vc', 'av(bvc)'),
         ('~(p->q)', 'p^~q'),
@@ -157,20 +158,50 @@ def main():
                     print("search did not terminate in time")
                 else:
                     score += e-s
-            print(score, p)
+            print(score)
             heappush(best, (score, StupidArray(p)))
         population = newPop(population, best)
         print(best[0])
         print("%s done" % i)
     times = []
-    for t in training:
+    for t in train:
         s = time.time()
         res = search(t[0], t[1], [depthH, numOpsH, constH], best[0][1].array)
         e = time.time()
         times.append(e-s)
     print("Avg time: %s" % np.mean(times))
     print("Weights: %s" % best[0][1].array)
+    '''
     #[ 0.90416266  0.60873807 -0.97709181]
+    #[ 15.33613225  22.53582815 -19.79393251]
+
+    cases = [
+        ('(~P^~R)v((P^~Q)^~R)', '~R^(Q->~(P^~R))')
+        #('(avb)vc', 'av(bvc)'),
+        #('~(p->q)', 'p^~q'),
+        #('~(pv(~p^q))', '~p^~q'),
+        #('(p^q)->(pvq)', 'T'),
+        #('(pvq)^((~pvr)->(pvq))', 'T')
+    ]
+
+    p = Parser()
+    parsed = [(p.parse(c[0]), p.parse(c[1])) for c in cases]
+    print(parsed)
+    sums = []
+
+    for i in range(8):
+        sum = 0
+        for c in parsed:
+            start = c[0]
+            target = c[1]
+            s = time.time()
+            res = search(start, target, [depthH, numOpsH, constH], [15.33613225, 22.53582815, -19.79393251])
+            e = time.time()
+            sum+=e-s
+        sums.append(sum)
+
+    with open('DEP_res.json', 'w') as file:
+        file.write(json.dumps(sums))
 
 
 if __name__ == '__main__':

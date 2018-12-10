@@ -1,9 +1,10 @@
 import sys
 import time
+import json
 
 from parser import Parser
 
-def BFS(start, target):
+def BFS(start, target, pr=True):
     queue = [(start, None)]
     found = False
     last = None
@@ -26,7 +27,8 @@ def BFS(start, target):
         return False
     else:
         print('Path found! The expressions are logically equivalent!')
-        printPath(last)
+        if pr:
+            printPath(last)
         return True
 
 def printPath(node):
@@ -37,16 +39,35 @@ def printPath(node):
         print(node[0])
 
 def main():
-    if len(sys.argv) != 3:
-        raise Exception('Invalid number of arguments')
+    #if len(sys.argv) != 3:
+    #    raise Exception('Invalid number of arguments')
+
+    cases = [
+        ('(avb)vc', 'av(bvc)'),
+        ('~(p->q)', 'p^~q'),
+        ('~(pv(~p^q))', '~p^~q'),
+        ('(p^q)->(pvq)', 'T'),
+        #('(pvq)^((~pvr)->(pvq))', 'T')
+    ]
+
     p = Parser()
-    start = p.parse(sys.argv[1])
-    target = p.parse(sys.argv[2])
-    s = time.time()
-    res = BFS(start, target)
-    e = time.time()
-    print("BFS Elapsed Time: %s" % (e-s))
-    return res
+    parsed = [(p.parse(c[0]), p.parse(c[1])) for c in cases]
+
+    sums = []
+
+    for i in range(8):
+        sum = 0
+        for c in parsed:
+            start = c[0]
+            target = c[1]
+            s = time.time()
+            res = BFS(start, target, False)
+            e = time.time()
+            sum+=e-s
+        sums.append(sum)
+
+    with open('BFS_res.json', 'w') as file:
+        file.write(json.dumps(sums))
 
 if __name__ == '__main__':
     main()
