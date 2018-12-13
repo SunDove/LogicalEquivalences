@@ -197,6 +197,18 @@ class Bool(Const):
 
     def __eq__(self, other):
         return self.__str__() == str(other)
+    
+    def pretty(self):
+        if self.value:
+            return 'T'
+        return 'F'
+    
+    def getNeighbors(self):
+        neighbors = []
+
+        neighbors.append(Not(self))
+
+        return neighbors + super().getNeighbors()
 
 class Var(Const):
     def __init__(self, s):
@@ -210,6 +222,9 @@ class Var(Const):
 
     def __eq__(self, other):
         return self.__str__() == str(other)
+    
+    def pretty(self):
+        return self.value
 
 class Not(UnaryOp):
     def __str__(self):
@@ -240,6 +255,9 @@ class Not(UnaryOp):
             neighbors.append(BiCond(c.getFirstChild(), Not(c.getSecondChild())))
 
         return neighbors + super().getNeighbors()
+    
+    def pretty(self):
+        return '~' + self.getChild().pretty()
 
 class And(BinaryOp):
     def __str__(self):
@@ -317,6 +335,9 @@ class And(BinaryOp):
         if isinstance(c1, Cond) and isinstance(c2, Cond) and c1.getSecondChild() == c2.getSecondChild():
             neighbors.append(Cond(Or(c1.getFirstChild(), c2.getSecondChild()), c1.getSecondChild()))
         return neighbors + super().getNeighbors()
+    
+    def pretty(self):
+        return '(' + self.getFirstChild().pretty() + '^' + self.getSecondChild().pretty() + ')'
 
 class Or(BinaryOp):
     def __str__(self):
@@ -395,8 +416,12 @@ class Or(BinaryOp):
             neighbors.append(Cond(And(c1.getFirstChild(), c2.getFirstChild()), c1.getSecondChild()))
 
         return neighbors + super().getNeighbors()
+    
+    def pretty(self):
+        return '(' + self.getFirstChild().pretty() + 'v' + self.getSecondChild().pretty() + ')'
 
 
+# Not used :/
 class Xor(BinaryOp):
     def __str__(self):
         return "Xor(" + str(self.getFirstChild()) + ", " + str(self.getSecondChild()) + ")"
@@ -417,6 +442,9 @@ class Cond(BinaryOp):
         neighbors.append(Cond(Not(c2), Not(c1)))
 
         return neighbors + super().getNeighbors()
+    
+    def pretty(self):
+        return '(' + self.getFirstChild().pretty() + '->' + self.getSecondChild().pretty() + ')'
 
 class BiCond(BinaryOp):
     def __str__(self):
@@ -437,6 +465,9 @@ class BiCond(BinaryOp):
         neighbors.append(Or(And(c1, c2), And(Not(c1), Not(c2))))
 
         return neighbors + super().getNeighbors()
+    
+    def pretty(self):
+        return '(' + self.getFirstChild().pretty() + '[=]' + self.getSecondChild().pretty() +')'
 
 def remove(elem, ls):
     indexOfElem = ls.index(elem)
@@ -455,3 +486,10 @@ def comboRec(options):
             results.append([option] + combo)
 
     return results
+
+def printPath(node):
+    if node[1]==None:
+        print(node[0].pretty())
+    else:
+        printPath(node[1])
+        print(node[0].pretty())
