@@ -4,6 +4,7 @@ from heapq import *
 import AST
 import numpy as np
 import json
+from math import inf
 
 from parser import Parser
 
@@ -94,75 +95,27 @@ def search(start, target, heur, pr=True, limit=20):
     else:
         print('Path found! The expressions are logically equivalent!')
         if pr:
-            printPath(last)
+            AST.printPath(last)
         return found
 
-def printPath(node):
-    if node[1]==None:
-        print(node[0])
-    else:
-        printPath(node[1])
-        print(node[0])
-
 def main():
-    #if len(sys.argv) != 4:
-    #    raise Exception('Invalid number of arguments')
+    maxDepth = inf
+    if len(sys.argv) == 5:
+        maxDepth = int(sys.argv[4])
+    elif len(sys.argv) != 4:
+       raise Exception('Invalid number of arguments')
 
     argKeys = {"depth": depthH, "numOps": numOpsH, "constCount": constH}
+    h = argKeys[sys.argv[1]]
     results = {}
     p = Parser()
-    start = p.parse('(pv(pv(pvT)))')
-    target = p.parse('T')
-    h = (lambda x, y: 1)
+    start = p.parse(sys.argv[2])
+    target = p.parse(sys.argv[3])
 
-
-    for i in range(5, 26):
-        print(i)
-        for j in range(10):
-            s = time.time()
-            res = search(start, target, (lambda x, y: 1), pr=False, limit=i)
-            e = time.time()
-            if i in results:
-                results[i].append(e-s)
-            else:
-                results[i] = [e-s]
-    with open('depthlimit.json', 'w') as out:
-        out.write(json.dumps(results))
-
-    '''
     s = time.time()
-    res = search(start, target, h, True, 30)
+    res = search(start, target, h, pr=True, limit=maxDepth)
     e = time.time()
-    print("Tree Depth Heuristic Elapsed Time: %s" % (e-s))
-
-
-
-    cases = [
-        ('(avb)vc', 'av(bvc)'),
-        ('~(p->q)', 'p^~q'),
-        ('~(pv(~p^q))', '~p^~q'),
-        ('(p^q)->(pvq)', 'T'),
-        #('(pvq)^((~pvr)->(pvq))', 'T')
-    ]
-
-    p = Parser()
-    parsed = [(p.parse(c[0]), p.parse(c[1])) for c in cases]
-    print(parsed)
-    sums = []
-
-    for i in range(8):
-        sum = 0
-        for c in parsed:
-            start = c[0]
-            target = c[1]
-            s = time.time()
-            res = search(start, target, depthH, False, 28)
-            e = time.time()
-            sum+=e-s
-        sums.append(sum)
-    with open('DEP_res.json', 'w') as file:
-        file.write(json.dumps(sums))
-    '''
+    print(res)
 
 if __name__ == '__main__':
     main()

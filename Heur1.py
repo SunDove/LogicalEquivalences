@@ -3,6 +3,7 @@ import time
 from heapq import *
 
 from parser import Parser
+from AST import printPath
 
 def search(start, target):
     heap = []
@@ -11,6 +12,9 @@ def search(start, target):
     found = False
     visited = {}
     last = None
+    if start == target:
+        found = True
+        last = [target, None]
     while (not found) and len(heap)>0:
         node = heappop(heap)
         node = node[1]
@@ -32,13 +36,6 @@ def search(start, target):
         print('Path found! The expressions are logically equivalent!')
         printPath(last)
         return True
-
-def printPath(node):
-    if node[1]==None:
-        print(node[0])
-    else:
-        printPath(node[1])
-        print(node[0])
 
 def main():
     if len(sys.argv) != 3:

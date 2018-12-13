@@ -3,6 +3,7 @@ import time
 import json
 
 from parser import Parser
+from AST import printPath
 
 def BFS(start, target, pr=True):
     queue = [(start, None)]
@@ -10,6 +11,9 @@ def BFS(start, target, pr=True):
     last = None
     ind = 0
     visited = {}
+    if start == target:
+        last = (target, None)
+        found = True
     while (not found) and len(queue[ind:])>0:
         node = queue[ind]
         ind+=1
@@ -31,43 +35,17 @@ def BFS(start, target, pr=True):
             printPath(last)
         return True
 
-def printPath(node):
-    if node[1]==None:
-        print(node[0])
-    else:
-        printPath(node[1])
-        print(node[0])
-
 def main():
-    #if len(sys.argv) != 3:
-    #    raise Exception('Invalid number of arguments')
-
-    cases = [
-        ('(avb)vc', 'av(bvc)'),
-        ('~(p->q)', 'p^~q'),
-        ('~(pv(~p^q))', '~p^~q'),
-        ('(p^q)->(pvq)', 'T'),
-        #('(pvq)^((~pvr)->(pvq))', 'T')
-    ]
+    if len(sys.argv) != 3:
+        raise Exception('Invalid number of arguments')
 
     p = Parser()
-    parsed = [(p.parse(c[0]), p.parse(c[1])) for c in cases]
 
-    sums = []
-
-    for i in range(8):
-        sum = 0
-        for c in parsed:
-            start = c[0]
-            target = c[1]
-            s = time.time()
-            res = BFS(start, target, False)
-            e = time.time()
-            sum+=e-s
-        sums.append(sum)
-
-    with open('BFS_res.json', 'w') as file:
-        file.write(json.dumps(sums))
+    start = p.parse(sys.argv[1])
+    target = p.parse(sys.argv[2])
+    s = time.time()
+    res = BFS(start, target)
+    e = time.time()
 
 if __name__ == '__main__':
     main()
