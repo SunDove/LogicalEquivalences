@@ -85,15 +85,15 @@ def search(start, target, heurs, weights, pr=True):
     else:
         if pr:
             print('Path found! The expressions are logically equivalent!')
-            printPath(last)
+            AST.printPath(last)
         return found
 
-def printPath(node):
-    if node[1]==None:
-        print(node[0])
-    else:
-        printPath(node[1])
-        print(node[0])
+# def printPath(node):
+#     if node[1]==None:
+#         print(node[0])
+#     else:
+#         printPath(node[1])
+#         print(node[0])
 
 def newPop(population, scores):
     choose = []
@@ -123,7 +123,7 @@ class StupidArray:
     def __repr__(self):
         return str(self.array)
 
-def main():
+def train():
 
     training = [
         ('(avb)vc', 'av(bvc)'),
@@ -182,6 +182,7 @@ def main():
     #[ 15.33613225  22.53582815 -19.79393251]
 
 
+def runWeightedSearch(start, end, weights):
     '''
     #Test result:
     cases = [
@@ -191,27 +192,22 @@ def main():
         ('(p^q)->(pvq)', 'T'),
         ('(pvq)^((~pvr)->(pvq))', 'T')
     ]
-
-    p = Parser()
-    parsed = [(p.parse(c[0]), p.parse(c[1])) for c in cases]
-    print(parsed)
-    sums = []
-
-    for i in range(8):
-        sum = 0
-        for c in parsed:
-            start = c[0]
-            target = c[1]
-            s = time.time()
-            res = search(start, target, [depthH, numOpsH, constH], [15.33613225, 22.53582815, -19.79393251])
-            e = time.time()
-            sum+=e-s
-        sums.append(sum)
-
-    with open('DEP_res.json', 'w') as file:
-        file.write(json.dumps(sums))
     '''
 
+    p = Parser()
+
+    startp = p.parse(start)
+    targetp = p.parse(end)
+    s = time.time()
+    res = search(startp, targetp, [depthH, numOpsH, constH], weights)
+    e = time.time()
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) == 1:
+        train()
+    elif len(sys.argv) == 6:
+        weights = [float(w) for w in sys.argv[3:]]
+        runWeightedSearch(sys.argv[1], sys.argv[2], weights)
+    
+    else:
+        print("Invalid number of arguments")
