@@ -206,7 +206,7 @@ class Bool(Const):
     def getNeighbors(self):
         neighbors = []
 
-        neighbors.append(Not(self))
+        neighbors.append(Not(Not(self)))
 
         return neighbors + super().getNeighbors()
 
