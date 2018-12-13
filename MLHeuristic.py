@@ -59,6 +59,10 @@ def search(start, target, heurs, weights, pr=True):
     visited = {}
     last = None
 
+    if start == target:
+        found = True
+        last = [target, None]
+
     startDepth = start.depth()
     targetDepth = target.depth()
     maxDepth = max(startDepth, targetDepth) + np.sqrt(startDepth + targetDepth)
