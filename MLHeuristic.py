@@ -124,7 +124,7 @@ class StupidArray:
         return str(self.array)
 
 def main():
-    '''
+
     training = [
         ('(avb)vc', 'av(bvc)'),
         ('~(p->q)', 'p^~q'),
@@ -132,6 +132,8 @@ def main():
         ('(p^q)->(pvq)', 'T'),
         ('(pvq)^((~pvr)->(pvq))', 'T')
     ]
+
+    results = {}
 
     par = Parser()
     train = [(par.parse(t[0]), par.parse(t[1])) for t in training]
@@ -160,8 +162,11 @@ def main():
                     score += e-s
             print(score)
             heappush(best, (score, StupidArray(p)))
+        smallest = nsmallest(45, best)
+        smallest = [i[0] for i in smallest]
+        results[i] = smallest
         population = newPop(population, best)
-        print(best[0])
+        print(nsmallest(1, best))
         print("%s done" % i)
     times = []
     for t in train:
@@ -171,17 +176,20 @@ def main():
         times.append(e-s)
     print("Avg time: %s" % np.mean(times))
     print("Weights: %s" % best[0][1].array)
-    '''
+    with open('mL_res.json', 'w') as file:
+        file.write(json.dumps(results))
     #[ 0.90416266  0.60873807 -0.97709181]
     #[ 15.33613225  22.53582815 -19.79393251]
 
+
+    '''
+    #Test result:
     cases = [
-        ('(~P^~R)v((P^~Q)^~R)', '~R^(Q->~(P^~R))')
-        #('(avb)vc', 'av(bvc)'),
-        #('~(p->q)', 'p^~q'),
-        #('~(pv(~p^q))', '~p^~q'),
-        #('(p^q)->(pvq)', 'T'),
-        #('(pvq)^((~pvr)->(pvq))', 'T')
+        ('(avb)vc', 'av(bvc)'),
+        ('~(p->q)', 'p^~q'),
+        ('~(pv(~p^q))', '~p^~q'),
+        ('(p^q)->(pvq)', 'T'),
+        ('(pvq)^((~pvr)->(pvq))', 'T')
     ]
 
     p = Parser()
@@ -202,6 +210,7 @@ def main():
 
     with open('DEP_res.json', 'w') as file:
         file.write(json.dumps(sums))
+    '''
 
 
 if __name__ == '__main__':

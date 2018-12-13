@@ -110,11 +110,17 @@ def main():
 
     argKeys = {"depth": depthH, "numOps": numOpsH, "constCount": constH}
     results = {}
-    '''
-    for i in range(25, 35):
-        for j in range(30):
+    p = Parser()
+    start = p.parse('(pv(pv(pvT)))')
+    target = p.parse('T')
+    h = (lambda x, y: 1)
+
+
+    for i in range(5, 26):
+        print(i)
+        for j in range(10):
             s = time.time()
-            res = search(start, target, h, False, i)
+            res = search(start, target, (lambda x, y: 1), pr=False, limit=i)
             e = time.time()
             if i in results:
                 results[i].append(e-s)
@@ -122,13 +128,14 @@ def main():
                 results[i] = [e-s]
     with open('depthlimit.json', 'w') as out:
         out.write(json.dumps(results))
-        '''
+
     '''
     s = time.time()
     res = search(start, target, h, True, 30)
     e = time.time()
     print("Tree Depth Heuristic Elapsed Time: %s" % (e-s))
-    '''
+
+
 
     cases = [
         ('(avb)vc', 'av(bvc)'),
@@ -153,9 +160,9 @@ def main():
             e = time.time()
             sum+=e-s
         sums.append(sum)
-
     with open('DEP_res.json', 'w') as file:
         file.write(json.dumps(sums))
+    '''
 
 if __name__ == '__main__':
     main()

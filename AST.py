@@ -268,9 +268,9 @@ class And(BinaryOp):
         # Potential cycle here :/
         neighbors.append(And(c2, c1))
 
-        # Associative law 
-        # Potential cycle here too ;/ 
-        if isinstance(c1, And): 
+        # Associative law
+        # Potential cycle here too ;/
+        if isinstance(c1, And):
             args = [c1.getFirstChild(), c1.getSecondChild(), c2]
             permutations = comboRec(args)
             remove(args, permutations)
@@ -315,7 +315,7 @@ class And(BinaryOp):
 
         # 7.7
         if isinstance(c1, Cond) and isinstance(c2, Cond) and c1.getSecondChild() == c2.getSecondChild():
-            neighbors.append(Cond(Or(c1.getFirstChild(), c2.getSecondChild()), c1.getSecondChild())) 
+            neighbors.append(Cond(Or(c1.getFirstChild(), c2.getSecondChild()), c1.getSecondChild()))
         return neighbors + super().getNeighbors()
 
 class Or(BinaryOp):
@@ -448,7 +448,7 @@ def comboRec(options):
     firstElem = options[0]
 
     results = []
-    
+
     for option in options:
         optionsWithout = remove(option, options)
         for combo in comboRec(optionsWithout):

@@ -18,16 +18,36 @@ def removeOutliers(arr):
 
 
 def main():
+
     with open('depthlimit.json', 'r') as file:
         data = json.loads(file.read())
     avgs = []
-    for i in range(25, 35):
+    for i in range(5, 26):
         a = data[str(i)]
         #a = removeOutliers(a)
         avgs.append(np.median(a))
     df = pd.DataFrame(data)
     print(avgs)
     plt.plot(avgs)
+    plt.xticks(range(21), range(5, 26))
+    plt.xlabel('Depth Limit')
+    plt.ylabel('Average Runtime (seconds)')
+    plt.title('Results Of Depth Limit Search')
+    plt.show()
+
+
+    with open('mL_res.json', 'r') as file:
+        data = json.loads(file.read())
+    avgs = []
+    for i in range(20):
+        a = data[str(i)]
+        a = removeOutliers(a)
+        avgs.append(np.mean(a))
+    plt.plot(avgs)
+    plt.xticks(range(20), range(1, 21))
+    plt.xlabel('Generation')
+    plt.ylabel('Average Runtime (seconds)')
+    plt.title('Results Of Learning Heuristic Weights')
     plt.show()
 
     '''
